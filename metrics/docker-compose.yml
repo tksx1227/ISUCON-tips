@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  app:
+    build: ./prometheus
+    ports:
+      - "9090:9090"
+    tty: true
+    stdin_open: true
+  node-exporter:
+    build: ./node-exporter
+    ports:
+      - "9100:9100"
+    tty: true
+    stdin_open: true
