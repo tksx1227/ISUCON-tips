@@ -51,7 +51,7 @@ setup-node-exporter: --make-system-dir ## Set up node_exporter
 	tar -xvf $(DOWNLOAD_DIR)/$(NODE_EXPORTER_FILE) -C /tmp
 	sudo install $(DOWNLOAD_DIR)/$(NODE_EXPORTER_DIR)/node_exporter /usr/local/bin/node_exporter
 	$(RM) $(DOWNLOAD_DIR)/$(NODE_EXPORTER_FILE) $(DOWNLOAD_DIR)/$(NODE_EXPORTER_DIR)
-	sudo cp ~/node_exporter/node_exporter.service /usr/lib/systemd/system/node_exporter.service
+	sudo cp $(PWD)/node_exporter/node_exporter.service /usr/lib/systemd/system/node_exporter.service
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now node_exporter.service
 
