@@ -1,7 +1,8 @@
 UNAME := $(shell uname)
 
-ALP_PATH = https://github.com/tkuchiki/alp/releases/download/v1.0.10/$(ALP_FILE)
+DOWNLOAD_DIR := /tmp
 
+# alp
 ifeq ($(UNAME), Linux)
 	# Linux
 	ALP_FILE := alp_linux_amd64.tar.gz
@@ -9,14 +10,27 @@ else
 	# M1Mac
 	ALP_FILE := alp_darwin_arm64.tar.gz
 endif
+ALP_PATH := https://github.com/tkuchiki/alp/releases/download/v1.0.10/$(ALP_FILE)
 
-all:
-	@echo $(ALP_PATH)
+# pt-query-digest
+PT_QUERY_DIGEST_FILE := percona-toolkit_3.4.0-3.focal_amd64.deb
+PT_QUERY_DIGEST_PATH := https://downloads.percona.com/downloads/percona-toolkit/3.4.0/binary/debian/focal/x86_64/$(PT_QUERY_DIGEST_FILE)
 
-.PHONY: set-up-alp
-set-up-alp:
+.PHONY: init
+init: setup-alp setup-pt-query-digest
+
+.PHONY: setup-alp
+setup-alp:
 	@echo -e "\033[32mInstalling alp...\033[0m"
-	curl -o /tmp/$(ALP_FILE) -OL $(ALP_PATH)
-	tar -xvf /tmp/$(ALP_FILE) -C /tmp
-	sudo install /tmp/alp /usr/local/bin/alp
-	rm /tmp/$(ALP_FILE) /tmp/alp
+	curl -o $(DOWNLOAD_DIR)/$(ALP_FILE) -OL $(ALP_PATH)
+	tar -xvf $(DOWNLOAD_DIR)/$(ALP_FILE) -C /tmp
+	sudo install $(DOWNLOAD_DIR)/alp /usr/local/bin/alp
+	$(RM) $(DOWNLOAD_DIR)/$(ALP_FILE) $(DOWNLOAD_DIR)/alp
+
+.PHONY: setup-pt-query-digest
+setup-pt-query-digest:
+	@echo -e "\033[32mInstalling pt-query-digest...\033[0m"
+	curl -o $(DOWNLOAD_DIR)/$(PT_QUERY_DIGEST_FILE) -OL $(PT_QUERY_DIGEST_PATH)
+	sudo apt-get install -y gdebi
+	sudo gdebi -n $(DOWNLOAD_DIR)/$(PT_QUERY_DIGEST_FILE)
+	$(RM) $(DOWNLOAD_DIR)/$(PT_QUERY_DIGEST_FILE)
