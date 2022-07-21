@@ -1,0 +1,10 @@
+[Uint]
+Description=Node Exporter - Prometheus exporter for hardware and OS metrics
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+PrivateTmp=false
+
+[Install]
+WantedBy=multi-user.target
