@@ -1,0 +1,10 @@
+[Unit]
+Description=The Prometheus monitoring system and time series database
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/prometheus --config.file=/etc/prometheus/prometheus_config.yml
+PrivateTmp=false
+
+[Install]
+WantedBy=multi-user.target

@@ -22,6 +22,15 @@ else
 	NODE_EXPORTER_FILE := node_exporter-1.3.1.darwin-arm64.tar.gz
 endif
 NODE_EXPORTER_DIR := $(subst .tar.gz,,$(NODE_EXPORTER_FILE))
+
+# Prometheus
+ifeq ($(UNAME), Linux)
+	PROMETHEUS_FILE := prometheus-2.37.0.linux-amd64.tar.gz
+else
+	PROMETHEUS_FILE := prometheus-2.37.0.darwin-arm64.tar.gz
+endif
+PROMETHEUS_DIR := $(subst .tar.gz,,$(PROMETHEUS_FILE))
+PROMETHEUS_PATH := https://github.com/prometheus/prometheus/releases/download/v2.37.0/$(PROMETHEUS_FILE)
 NODE_EXPORTER_PATH := https://github.com/prometheus/node_exporter/releases/download/v1.3.1/$(NODE_EXPORTER_FILE)
 .DEFAULT_GOAL := help
 
@@ -55,10 +64,25 @@ setup-node-exporter: --make-system-dir ## Set up node_exporter
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now node_exporter.service
 
+.PHONY: setup-prometheus
+setup-prometheus: --make-system-dir --make-prometheus-dir ## Set up Prometheus
+	@echo -e "\033[32mInstalling prometheus...\033[0m"
+	curl -o $(DOWNLOAD_DIR)/$(PROMETHEUS_FILE) -OL $(PROMETHEUS_PATH)
+	tar -xvf $(DOWNLOAD_DIR)/$(PROMETHEUS_FILE) -C /tmp
+	sudo install $(DOWNLOAD_DIR)/$(PROMETHEUS_DIR)/prometheus /usr/local/bin/prometheus
+	$(RM) $(DOWNLOAD_DIR)/$(PROMETHEUS_FILE) $(DOWNLOAD_DIR)/$(PROMETHEUS_DIR)
+	sudo cp $(PWD)/prometheus/prometheus.service /usr/lib/systemd/system/prometheus.service
+	sudo cp $(PWD)/prometheus/prometheus_config.yml /etc/prometheus/prometheus_config.yml
+	sudo systemctl daemon-reload
+	sudo systemctl enable --now prometheus.service
+
 .PHONY: help
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-26s\033[0m %s\n", $$1, $$2}'
 
 # Private Targets
 --make-system-dir:
-	mkdir -p /usr/lib/systemd/system
+	sudo mkdir -p /usr/lib/systemd/system
+
+--make-prometheus-dir:
+	sudo mkdir -p /etc/prometheus
