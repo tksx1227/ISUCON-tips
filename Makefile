@@ -32,6 +32,16 @@ endif
 PROMETHEUS_DIR := $(subst .tar.gz,,$(PROMETHEUS_FILE))
 PROMETHEUS_PATH := https://github.com/prometheus/prometheus/releases/download/v2.37.0/$(PROMETHEUS_FILE)
 NODE_EXPORTER_PATH := https://github.com/prometheus/node_exporter/releases/download/v1.3.1/$(NODE_EXPORTER_FILE)
+
+# Database
+MYSQL_HOST := 127.0.0.1
+MYSQL_PORT := 3306
+MYSQL_USER := isucon
+MYSQL_DBNAME := isucondition
+MYSQL_PASS := isucon
+MYSQL := mysql -h$(MYSQL_HOST) -P$(MYSQL_PORT) -u$(MYSQL_USER) -p$(MYSQL_PASS) $(MYSQL_DBNAME)
+SLOW_LOG := /var/log/mysql/slow-query.log
+
 .DEFAULT_GOAL := help
 
 .PHONY: init
@@ -75,6 +85,23 @@ setup-prometheus: --make-system-dir --make-prometheus-dir ## Set up Prometheus
 	sudo cp $(PWD)/prometheus/prometheus_config.yml /etc/prometheus/prometheus_config.yml
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now prometheus.service
+
+.PHONY: slow-on
+slow-on: ## Start logging slow-queries
+	sudo rm $(SLOW_LOG)
+	sudo systemctl restart mysql
+	$(MYSQL) -e "\
+		set global slow_query_log_file='$(SLOW_LOG)'; \
+		set global long_query_time=0; \
+		set global slow_query_log=ON;"
+
+.PHONY: slow-off
+slow-off: ## Stop logging slow-queries
+	$(MYSQL) -e "set global slow_query_log=OFF;"
+
+.PHONY: slow-show
+slow-show: ## Show metrics of slow-queries
+	sudo pt-query-digest $(SLOW_LOG)
 
 .PHONY: help
 help: ## Display this help screen
