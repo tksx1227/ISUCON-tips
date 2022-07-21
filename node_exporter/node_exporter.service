@@ -1,4 +1,4 @@
-[Uint]
+[Unit]
 Description=Node Exporter - Prometheus exporter for hardware and OS metrics
 
 [Service]
