@@ -11,6 +11,12 @@ else
 endif
 ALP_PATH := https://github.com/tkuchiki/alp/releases/download/v1.0.10/$(ALP_FILE)
 
+ALP_SORT := sum
+ALP_DUMP_NAME := alp.dump
+ALP_DUMP_PATH := /tmp/$(ALP_DUMP_NAME)
+ALPM := "/api/.+"
+ALP_OUT_FORMAT := count,method,uri,min,max,sum,avg,p99
+
 # pt-query-digest
 PT_QUERY_DIGEST_FILE := percona-toolkit_3.4.0-3.focal_amd64.deb
 PT_QUERY_DIGEST_PATH := https://downloads.percona.com/downloads/percona-toolkit/3.4.0/binary/debian/focal/x86_64/$(PT_QUERY_DIGEST_FILE)
@@ -85,6 +91,18 @@ setup-prometheus: --make-system-dir --make-prometheus-dir ## Set up Prometheus
 	sudo cp $(PWD)/prometheus/prometheus_config.yml /etc/prometheus/prometheus_config.yml
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now prometheus.service
+
+.PHONY: alp
+alp: ## Access analysis by alp
+	sudo alp ltsv --file=/var/log/nginx/access.log --nosave-pos --pos /tmp/alp.pos --sort $(ALP_SORT) --reverse -o $(ALP_OUT_FORMAT) -m $(ALPM) -q
+
+.PHONY: alpsave
+alpsave: ## Access analysis by alp (Generate dump file and save read position)
+	sudo alp ltsv --file /var/log/nginx/access.log --pos /tmp/alp.pos --dump $(ALP_DUMP_PATH) --sort $(ALP_SORT) --reverse -o $(ALP_OUT_FORMAT) -m $(ALPM) -q
+
+.PHONY: alpload
+alpload: ## Access analysis by alp (Load dump file)
+	sudo alp ltsv --load $(ALP_DUMP_PATH) --sort $(ALP_SORT) --reverse -o $(ALP_OUT_FORMAT) -q
 
 .PHONY: slow-on
 slow-on: ## Start logging slow-queries
