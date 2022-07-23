@@ -14,7 +14,7 @@ ALP_PATH := https://github.com/tkuchiki/alp/releases/download/v1.0.10/$(ALP_FILE
 ALP_SORT := sum
 ALP_DUMP_NAME := alp.dump
 ALP_DUMP_PATH := /tmp/$(ALP_DUMP_NAME)
-ALPM := "/api/.+"
+ALPM := "/api/player/competition/[-a-z0-9]+/ranking,/api/player/player/[-a-z0-9]+,/api/organizer/competition/[-a-z0-9]+/score,/api/organizer/competition/[-a-z0-9]+/finish,/api/organizer/player/[-a-z0-9]+/disqualified"
 ALP_OUT_FORMAT := count,method,uri,min,max,sum,avg,p99
 
 # pt-query-digest
@@ -42,9 +42,9 @@ NODE_EXPORTER_PATH := https://github.com/prometheus/node_exporter/releases/downl
 # Database
 MYSQL_HOST := 127.0.0.1
 MYSQL_PORT := 3306
-MYSQL_USER := isucon
-MYSQL_DBNAME := isucondition
-MYSQL_PASS := isucon
+MYSQL_USER := root
+MYSQL_DBNAME := isuports
+MYSQL_PASS := root
 MYSQL := mysql -h$(MYSQL_HOST) -P$(MYSQL_PORT) -u$(MYSQL_USER) -p$(MYSQL_PASS) $(MYSQL_DBNAME)
 SLOW_LOG := /var/log/mysql/slow-query.log
 
@@ -106,7 +106,7 @@ alpload: ## Access analysis by alp (Load dump file)
 
 .PHONY: slow-on
 slow-on: ## Start logging slow-queries
-	sudo rm $(SLOW_LOG)
+	sudo rm -f $(SLOW_LOG)
 	sudo systemctl restart mysql
 	$(MYSQL) -e "\
 		set global slow_query_log_file='$(SLOW_LOG)'; \
